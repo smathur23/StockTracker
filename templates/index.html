@@ -1,53 +1,52 @@
-{% extends 'base.html' %}
-
-{% block head %}
-<title>Stock Info</title>
-{% endblock %}
-
-{% block body %}
-<div class="content">
-    <h1 style="text-align: center;">Stock Info</h1>
-    {% if stocks|length < 1 %}
-        <h4 style="text-align: center;">There are no stocks to analyze. Add some below!</h4>
-    {% else %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <h1>Stock Price Tracker</h1>
+    <form action="/" method="POST">
+        <input type="text" name="content" placeholder="Enter stock ticker">
+        <button type="submit">Add Ticker</button>
+    </form>
 
     <table>
-        <tr>
-            <th>Stock Ticker</th>
-            <th>Most Recent Price</th>
-        </tr>
-        {% for stock in stocks %}
+        <thead>
+            <tr>
+                <th>Ticker</th>
+                <th>Recent Price</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stock in stocks %}
             <tr>
                 <td>{{ stock.ticker }}</td>
                 <td>{{ stock.recent_price }}</td>
                 <td>
-                    <a href="/delete/{{stock.id}}">Delete</a>
+                    <a href="/delete/{{ stock.id }}">Delete</a>
                 </td>
             </tr>
-        {% endfor %}
+            {% endfor %}
+        </tbody>
     </table>
-    {% endif %}
-
-    <form action="/" method="POST">
-        <input type="text" name="content" id="content">
-        <input type="submit" value="Add Stock to Analyze">
-    </form>
-
-    <form action="/update_prices">
-        <input type="submit" value="Update Prices">
-    </form>
 
     <form action="/email_prices" method="POST">
-        <input type="text" name="content" id="content">
-        <input type="submit" value="Email Prices">
+        <input type="email" name="content" placeholder="Enter your email">
+        <button type="submit">Email Prices</button>
     </form>
-    
-</div>
 
-{% if alert_flag %}
+    <form action="/update_prices" method="GET">
+        <button type="submit">Update Prices</button>
+    </form>
+
+    {% if alert_flag %}
     <script>
         alert("{{ alert_flag }}");
     </script>
-{% endif %}
-
-{% endblock %}
+    {% endif %}
+</body>
+</html>
