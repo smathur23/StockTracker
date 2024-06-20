@@ -18,6 +18,7 @@
             <tr>
                 <th>Ticker</th>
                 <th>Recent Price</th>
+                <th>Percent Change</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -26,6 +27,7 @@
             <tr>
                 <td>{{ stock.ticker }}</td>
                 <td>{{ stock.recent_price }}</td>
+                <td>{{ stock.percent_change }}%</td>
                 <td>
                     <a href="/delete/{{ stock.id }}">Delete</a>
                 </td>
@@ -38,10 +40,10 @@
         <input type="email" name="content" placeholder="Enter your email">
         <button type="submit">Email Prices</button>
     </form>
-
+<!-- 
     <form action="/update_prices" method="GET">
         <button type="submit">Update Prices</button>
-    </form>
+    </form> -->
 
     {% if alert_flag %}
     <script>
