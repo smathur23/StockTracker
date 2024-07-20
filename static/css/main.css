@@ -73,3 +73,11 @@ a {
 a:hover {
     text-decoration: underline;
 }
+
+.pos {
+    color: rgb(6, 165, 6);
+}
+
+.neg {
+    color: rgb(238, 0, 0);
+}
