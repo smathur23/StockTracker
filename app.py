@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, render_template, url_for, request, redirect
 from flask_sqlalchemy import SQLAlchemy
-import yfinance as yf
 import smtplib, ssl
 from datetime import datetime
 import os
