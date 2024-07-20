@@ -12,7 +12,7 @@
         <input type="text" name="content" placeholder="Enter stock ticker">
         <button type="submit">Add Ticker</button>
     </form>
-
+    <br>
     <table>
         <thead>
             <tr>
@@ -38,7 +38,7 @@
             {% endfor %}
         </tbody>
     </table>
-
+    <br>
     <form action="/email_prices" method="POST">
         <input type="email" name="content" placeholder="Enter your email">
         <button type="submit">Email Prices</button>

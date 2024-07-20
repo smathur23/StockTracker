@@ -5,6 +5,7 @@ import smtplib, ssl
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+from processing import *
 
 load_dotenv()
 
@@ -17,32 +18,11 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///stocks.db'
 db = SQLAlchemy(app)
 
-def get_price(symbol):
-    try:
-        stock = yf.Ticker(symbol)
-        return round(stock.history(period='1d')['Close'].iloc[-1], 2)
-    except Exception as e:
-        print(f"Error fetching stock data: {e}")
-        return 0
-
-def pct_change(symbol):
-    try:
-        stock = yf.Ticker(symbol)
-        history = stock.history(period='2d')
-        if len(history) < 2:
-            raise ValueError("Not enough data to calculate percent change")
-        
-        close_prices = history['Close']
-        pct_change = ((close_prices.iloc[-1] - close_prices.iloc[-2]) / close_prices.iloc[-2]) * 100
-        return round(pct_change, 2)
-    except Exception as e:
-        print(f"Error fetching stock data: {e}")
-        return 0
 
 class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     ticker = db.Column(db.String(10), nullable=False)
-    recent_price = db.Column(db.Float, default=0.0)  # Change to db.Float
+    recent_price = db.Column(db.Float, default=0.0)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     percent_change = db.Column(db.Float, default=0.0)
 
@@ -75,14 +55,13 @@ def home():
             except Exception as e:
                 alert_flag = f"Error adding new stock: {e}"
 
-    # Update prices for all stocks
     stocks = Todo.query.order_by(Todo.date_created).all()
     for stock in stocks:
         try:
             stock.recent_price = get_price(stock.ticker)
             stock.percent_change = pct_change(stock.ticker)
         except Exception as e:
-            print(f'Error updating price for {stock.ticker}: {e}')
+            print(f'Error updating price/percent for {stock.ticker}: {e}')
     
     db.session.commit()
 
@@ -98,7 +77,7 @@ Subject: Financial Data
         """
         message += f'\n'
         for stock in stocks:
-            message += f'Most Recent Price of {stock.ticker}: {stock.recent_price} with {stock.percent_change}% change\n'
+            message += f'{last_macd_crossover(stock.ticker)}\n\n'
         try:
             context = ssl.create_default_context()
             with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
