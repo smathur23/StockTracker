@@ -76,7 +76,7 @@ Subject: Financial Data
         """
         message += f'\n'
         for stock in stocks:
-            message += f'{last_macd_crossover(stock.ticker)}\n\n'
+            message += f'{last_macd_crossover(stock.ticker)}\n{donchian_channel_position(stock.ticker)}\n{rsi(stock.ticker)}\n{adx(stock.ticker)}\n\n'
         try:
             context = ssl.create_default_context()
             with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
