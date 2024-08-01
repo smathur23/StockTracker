@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Preferences</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <h1>User Preferences</h1>
+    <form action="{{ url_for('main.set_preferences') }}" method="POST">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" value="{{ current_user.email }}" readonly>
+        <br>
+        <label for="indicators">Select indicators:</label>
+        <br>
+        <input type="checkbox" name="indicators" value="macd" {% if 'macd' in current_user.preferences %}checked{% endif %}> MACD
+        <br>
+        <input type="checkbox" name="indicators" value="donchian" {% if 'donchian' in current_user.preferences %}checked{% endif %}> Donchian Channel
+        <br>
+        <input type="checkbox" name="indicators" value="rsi" {% if 'rsi' in current_user.preferences %}checked{% endif %}> RSI
+        <br>
+        <input type="checkbox" name="indicators" value="adx" {% if 'adx' in current_user.preferences %}checked{% endif %}> ADX
+        <br>
+        <label for="frequency">Email Frequency:</label>
+        <br>
+        <select id="frequency" name="frequency" required>
+            <option value="daily" {% if current_user.email_frequency == 'daily' %}selected{% endif %}>Daily</option>
+            <option value="weekly" {% if current_user.email_frequency == 'weekly' %}selected{% endif %}>Weekly</option>
+            <option value="monthly" {% if current_user.email_frequency == 'monthly' %}selected{% endif %}>Monthly</option>
+            <option value="none" {% if current_user.email_frequency == 'none' %}selected{% endif %}>Do not send emails</option>
+        </select>
+        <br>
+        <button type="submit">Save Preferences</button>
+    </form>    
+</body>
+</html>
