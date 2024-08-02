@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Tracker</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <script defer src="{{ url_for('static', filename='js/main.js') }}"></script>
 </head>
 <body>
-    
     <header>
         <h1>Stock Price Tracker</h1>
         <nav>
@@ -15,42 +15,47 @@
         </nav>
     </header>
 
-    
-    <form action="/" method="POST">
-        <input type="text" name="content" placeholder="Enter stock ticker">
-        <button type="submit">Add Ticker</button>
-    </form>
-    <br>
-    <table>
-        <thead>
-            <tr>
-                <th>Ticker</th>
-                <th>Recent Price</th>
-                <th>Percent Change</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for stock in stocks %}
-            <tr>
-                <td>{{ stock.ticker }}</td>
-                <td>{{ stock.recent_price }}</td>
-                <td class="{% if stock.percent_change < 0 %}neg{% else %}pos{% endif %}">
-                    {{ stock.percent_change }}%
-                </td>
-                <td>
-                    <a href="/delete/{{ stock.id }}">Delete</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <br>
-    <form action="/email_prices" method="POST">
-        <input type="email" name="content" placeholder="Enter your email">
-        <button type="submit">Email Prices</button>
-    </form>
-    
+    <main>
+        <form action="/" method="POST">
+            <input type="text" name="content" placeholder="Enter stock ticker" id="ticker-input">
+            <button type="submit">Add Ticker</button>
+        </form>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Ticker</th>
+                    <th>Recent Price</th>
+                    <th>Percent Change</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stock in stocks %}
+                <tr>
+                    <td data-label="Ticker">{{ stock.ticker }}</td>
+                    <td data-label="Recent Price">{{ stock.recent_price }}</td>
+                    <td data-label="Percent Change" class="{% if stock.percent_change < 0 %}neg{% else %}pos{% endif %}">
+                        {{ stock.percent_change }}%
+                    </td>
+                    <td data-label="Actions">
+                        <a href="/delete/{{ stock.id }}" class="delete-link">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <form action="/email_prices" method="POST">
+            <input type="email" name="content" value="{{ current_user.email }}" readonly>
+            <button type="submit">Email Prices</button>
+        </form>
+
+        <form action="/logout" method="GET">
+            <button type="submit">Logout</button>
+        </form>
+    </main>
+
     {% if alert_flag %}
     <script>
         alert("{{ alert_flag }}");

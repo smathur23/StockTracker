@@ -156,7 +156,7 @@ def set_preferences():
 def email_prices():
     if request.method == 'POST':
         stocks = Stock.query.filter_by(user_id=current_user.id).order_by(Stock.date_created).all()
-        email = request.form['content']
+        email = current_user.email
         preferences = current_user.preferences.split(',')
         if len(preferences) == 0:
             stocks = Stock.query.filter_by(user_id=current_user.id).order_by(Stock.date_created).all()
