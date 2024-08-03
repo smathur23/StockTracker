@@ -1,7 +1,6 @@
 import os
 from flask import Flask
 from .extensions import db, login_manager
-from supabase import create_client, Client
 from .app import main, auth
 from .model import User
 
