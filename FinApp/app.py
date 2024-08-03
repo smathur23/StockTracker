@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from .processing import *
 from .extensions import db, supabase
 from .model import Stock, User
-from datetime import timedelta
 
 load_dotenv()
 
@@ -201,16 +200,3 @@ def delete(id):
     except:
         return 'Error in deleting stock'
 
-# def should_send_email(user):
-#     if user.preferences == '': return False
-#     if user.email_frequency == 'daily':
-#         return True
-#     elif user.email_frequency == 'weekly':
-#         last_sent = user.last_email_sent
-#         if last_sent is None or last_sent < datetime.now() - timedelta(weeks=1):
-#             return True
-#     elif user.email_frequency == 'monthly':
-#         last_sent = user.last_email_sent
-#         if last_sent is None or last_sent < datetime.now() - timedelta(weeks=4):
-#             return True
-#     return False
