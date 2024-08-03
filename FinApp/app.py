@@ -22,6 +22,9 @@ password = os.getenv("APPPW")
 def login():
     if request.method == 'POST':
         email = request.form['email']
+        exists = User.query.filter_by(email=email).first()
+        if not exists:
+            return render_template('register.html', alert_flag="User does not exist! Please register.")
         password = request.form['password']
         try:
             response = supabase.auth.sign_in_with_password({
@@ -30,14 +33,11 @@ def login():
             })
         except Exception as e:
             return render_template('login.html', alert_flag=f"Error: {e}")
-
-        # if response['error']:
-        #     return render_template('login.html', alert_flag=response['error']['message'])
-
+        
         user_data = response.user
         user = User.query.filter_by(email=user_data.email).first()
         if not user:
-            user = User(email=user_data.email)
+            user = User(email=user_data['email'])
             db.session.add(user)
             db.session.commit()
 
@@ -62,18 +62,17 @@ def register():
         except Exception as e:
             return render_template('register.html', alert_flag=f"Error: {e}")
 
-        # if response['error']:
-        #     return render_template('register.html', alert_flag=response['error']['message'])
-
         user_data = response.user
         new_user = User(email=user_data.email)
         db.session.add(new_user)
         db.session.commit()
 
         login_user(new_user)
-        return redirect(url_for('main.preferences'))
+
+        return redirect(url_for('main.preferences', alert_flag=""))
     
     return render_template('register.html')
+
 @auth.route('/logout')
 @login_required
 def logout():
