@@ -133,7 +133,7 @@ def adx(ticker):
         res += f"{ticker} is showing a very strond trend with an ADX of {current_adx}."
 
     stock_data['ADX_Cross'] = stock_data['DMP_14'] - stock_data['DMN_14']
-    stock_data['Signal'] = stock_data['ADX_Cross'].apply(lambda x: '+DI' if x > 0 else '-DI')
+    stock_data['Signal'] = stock_data['ADX_Cross'].apply(lambda x: 'Bullish' if x > 0 else 'Bearish')
     stock_data['Crossover'] = stock_data['Signal'].ne(stock_data['Signal'].shift())
 
     crossovers = stock_data[stock_data['Crossover']]
@@ -142,6 +142,6 @@ def adx(ticker):
         last_crossover = crossovers.iloc[-1]
         last_crossover_date = last_crossover.name.strftime('%Y-%m-%d')
         crossover_signal = last_crossover['Signal']
-        res += f" {crossover_signal} ADX crossover for {ticker} on {last_crossover_date}."
+        res += f" {crossover_signal} trend detected for {ticker} on {last_crossover_date}."
 
     return res
