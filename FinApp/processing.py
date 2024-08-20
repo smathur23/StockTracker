@@ -54,6 +54,8 @@ def last_macd_crossover(ticker):
         last_crossover = crossovers.iloc[-1]
         last_crossover_date = last_crossover.name.strftime('%Y-%m-%d')
         crossover_signal = last_crossover['Signal']
+        if (datetime.today() - last_crossover.name).days <= 3:
+            return f"{crossover_signal} MACD crossover for {ticker} on <em><u>{last_crossover_date}</u></em>."
         return f"{crossover_signal} MACD crossover for {ticker} on {last_crossover_date}."
 
 
@@ -142,6 +144,8 @@ def adx(ticker):
         last_crossover = crossovers.iloc[-1]
         last_crossover_date = last_crossover.name.strftime('%Y-%m-%d')
         crossover_signal = last_crossover['Signal']
-        res += f" {crossover_signal} trend detected for {ticker} on {last_crossover_date}."
+        if (datetime.today() - last_crossover.name).days <= 3:
+            return res + f" {crossover_signal} trend detected for {ticker} on <em><u>{last_crossover_date}</u></em>."
+        return res + f" {crossover_signal} trend detected for {ticker} on {last_crossover_date}."
 
     return res

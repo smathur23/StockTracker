@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, render_template, url_for, request, redirect, Blueprint
 from flask_login import login_user, login_required, logout_user, current_user
 import smtplib, ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import os
 from dotenv import load_dotenv
 from .processing import *
@@ -68,7 +70,7 @@ def register():
 
         login_user(new_user)
 
-        return redirect(url_for('auth.login', alert_flag="Confirm your email to login!"))
+        return redirect(url_for('auth.login', alert_flag="Confirm your email to login."))
     
     return render_template('register.html')
 
@@ -156,29 +158,36 @@ def email_prices():
         stocks = Stock.query.filter_by(user_id=current_user.id).order_by(Stock.date_created).all()
         email = current_user.email
         preferences = current_user.preferences.split(',')
-        if len(preferences) == 0:
-            stocks = Stock.query.filter_by(user_id=current_user.id).order_by(Stock.date_created).all()
-            return render_template('index.html', stocks=stocks, alert_flag="No preferences set.")
-        
-        message = """\
-Subject: Financial Data
+        message = MIMEMultipart("alternative")
+        message["Subject"] = "Financial Data"
+
+        message["From"] = sender
+        message["To"] = email
+
+        html = """\
+<html>
+<body>
+
         """
-        message += f'\n'
         for stock in stocks:
+            html += f"<h1>{stock.ticker}</h1>"
             if 'macd' in preferences:
-                message += f'{last_macd_crossover(stock.ticker)}\n'
+                html += f'<p><b>MACD:</b> {last_macd_crossover(stock.ticker)}</p>'
             if 'donchian' in preferences:
-                message += f'{donchian_channel_position(stock.ticker)}\n'
+                html += f'<p><b>Donchian:</b> {donchian_channel_position(stock.ticker)}</p>'
             if 'rsi' in preferences:
-                message += f'{rsi(stock.ticker)}\n'
+                html += f'<p><b>RSI:</b> {rsi(stock.ticker)}</p>'
             if 'adx' in preferences:
-                message += f'{adx(stock.ticker)}\n'
-            message += '\n'
+                html += f'</p><b>ADX:</b> {adx(stock.ticker)}</p>'
+        linkedin = "https://www.linkedin.com/in/saahil-mathur"
+        html += f'<br><p>Check out my <a href={linkedin}>LinkedIn</a>!</p>'
+        html += "<body>\n<html>"
+        message.attach(MIMEText(html, "html"))
         try:
             context = ssl.create_default_context()
             with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
                 server.login(sender, password)
-                server.sendmail(sender, email, message)
+                server.sendmail(sender, email, message.as_string())
             stocks = Stock.query.filter_by(user_id=current_user.id).order_by(Stock.date_created).all()
             return render_template('index.html', stocks=stocks, alert_flag="")
         except Exception as e:

@@ -55,8 +55,8 @@ def send_email(user):
     message["To"] = email
 
     html = """\
-    <html>
-    <body>
+<html>
+<body>
 
     """
     stock_data_cache = {}
