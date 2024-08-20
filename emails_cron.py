@@ -1,4 +1,6 @@
 import smtplib, ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import os
 from dotenv import load_dotenv
 from FinApp import extensions
@@ -46,12 +48,20 @@ def send_email(user):
     stocks = model.Stock.query.filter_by(user_id=user.id).all()
     email = user.email
     preferences = user.preferences.split(',')
-    message = """\
-Subject: Financial Data
-        """
-    message += f'\n'
+    message = MIMEMultipart("alternative")
+    message["Subject"] = "Financial Data"
+
+    message["From"] = sender
+    message["To"] = email
+
+    html = """\
+    <html>
+    <body>
+
+    """
     stock_data_cache = {}
     for stock in stocks:
+        html += f"<h1>{stock.ticker}</h1>"
         if stock.ticker not in stock_data_cache:
             stock_data_cache[stock.ticker] = {}
             stock_data_cache[stock.ticker]['macd'] = processing.last_macd_crossover(stock.ticker)
@@ -60,19 +70,20 @@ Subject: Financial Data
             stock_data_cache[stock.ticker]['adx'] = processing.adx(stock.ticker)
 
         if 'macd' in preferences:
-            message += f'{stock_data_cache[stock.ticker]["macd"]}\n'
+            html += f'<p><b>MACD:</b> {stock_data_cache[stock.ticker]["macd"]}</p>'
         if 'donchian' in preferences:
-            message += f'{stock_data_cache[stock.ticker]["donchian"]}\n'
+            html += f'<p><b>Donchian:</b> {stock_data_cache[stock.ticker]["donchian"]}</p>'
         if 'rsi' in preferences:
-            message += f'{stock_data_cache[stock.ticker]["rsi"]}\n'
+            html += f'<p><b>RSI:</b> {stock_data_cache[stock.ticker]["rsi"]}</p>'
         if 'adx' in preferences:
-            message += f'{stock_data_cache[stock.ticker]["adx"]}\n'
-        message += '\n'
+            html += f'</p><b>ADX:</b> {stock_data_cache[stock.ticker]["adx"]}</p>'
+        html += "<body>\n<html>"
+    message.attach(MIMEText(html, "html"))
     try:
         context = ssl.create_default_context()
         with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
             server.login(sender, password)
-            server.sendmail(sender, email, message)
+            server.sendmail(sender, email, message.as_string())
     except Exception as e:
         print(e)
 
