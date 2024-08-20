@@ -50,15 +50,23 @@ def send_email(user):
 Subject: Financial Data
         """
     message += f'\n'
+    stock_data_cache = {}
     for stock in stocks:
+        if stock.ticker not in stock_data_cache:
+            stock_data_cache[stock.ticker] = {}
+            stock_data_cache[stock.ticker]['macd'] = processing.last_macd_crossover(stock.ticker)
+            stock_data_cache[stock.ticker]['donchian'] = processing.donchian_channel_position(stock.ticker)
+            stock_data_cache[stock.ticker]['rsi'] = processing.rsi(stock.ticker)
+            stock_data_cache[stock.ticker]['adx'] = processing.adx(stock.ticker)
+
         if 'macd' in preferences:
-            message += f'{processing.last_macd_crossover(stock.ticker)}\n'
+            message += f'{stock_data_cache[stock.ticker]["macd"]}\n'
         if 'donchian' in preferences:
-            message += f'{processing.donchian_channel_position(stock.ticker)}\n'
+            message += f'{stock_data_cache[stock.ticker]["donchian"]}\n'
         if 'rsi' in preferences:
-            message += f'{processing.rsi(stock.ticker)}\n'
+            message += f'{stock_data_cache[stock.ticker]["rsi"]}\n'
         if 'adx' in preferences:
-            message += f'{processing.adx(stock.ticker)}\n'
+            message += f'{stock_data_cache[stock.ticker]["adx"]}\n'
         message += '\n'
     try:
         context = ssl.create_default_context()
