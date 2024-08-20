@@ -77,7 +77,7 @@ def send_email(user):
             html += f'<p><b>RSI:</b> {stock_data_cache[stock.ticker]["rsi"]}</p>'
         if 'adx' in preferences:
             html += f'</p><b>ADX:</b> {stock_data_cache[stock.ticker]["adx"]}</p>'
-        html += "<body>\n<html>"
+    html += "<body>\n<html>"
     message.attach(MIMEText(html, "html"))
     try:
         context = ssl.create_default_context()
