@@ -87,7 +87,7 @@ def home():
     alert_flag = ""
 
     if request.method == 'POST':
-        stock_name = request.form['content'].upper()
+        stock_name = request.form['content'].upper().strip()
         new_stock = Stock(ticker=stock_name)
 
         existing_stock = Stock.query.filter_by(ticker=stock_name, user_id=current_user.id).first()
