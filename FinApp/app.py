@@ -68,7 +68,7 @@ def register():
 
         login_user(new_user)
 
-        return redirect(url_for('main.preferences', alert_flag=""))
+        return redirect(url_for('auth.login', alert_flag="Confirm your email to login!"))
     
     return render_template('register.html')
 
