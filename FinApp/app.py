@@ -70,7 +70,7 @@ def register():
 
         login_user(new_user)
 
-        return redirect(url_for('auth.login', alert_flag="Confirm your email to login."))
+        return redirect(url_for('main.preferences', alert_flag=""))
     
     return render_template('register.html')
 
@@ -153,11 +153,15 @@ def set_preferences():
     return redirect(url_for('main.home'))
 
 @main.route('/email_prices', methods=['POST', 'GET'])
+@login_required
 def email_prices():
     if request.method == 'POST':
         stocks = Stock.query.filter_by(user_id=current_user.id).order_by(Stock.date_created).all()
         email = current_user.email
         preferences = current_user.preferences.split(',')
+        if not preferences:
+            stocks = Stock.query.filter_by(user_id=current_user.id).order_by(Stock.date_created).all()
+            return render_template('index.html', stocks=stocks, alert_flag="Please select indicators in Preferences.")
         message = MIMEMultipart("alternative")
         message["Subject"] = "Financial Data"
 
