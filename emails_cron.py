@@ -58,6 +58,8 @@ def send_email(user):
 <html>
 <body>
 
+<h3>Note: Crossovers in the last 3 days are <em><u>highlighted</u></em>.</h3>
+<br>
     """
     stock_data_cache = {}
     for stock in stocks:

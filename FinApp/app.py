@@ -172,6 +172,8 @@ def email_prices():
 <html>
 <body>
 
+<h3>Note: Crossovers in the last 3 days are <em><u>highlighted</u></em>.</h3>
+<br>
         """
         for stock in stocks:
             if ".NS" in stock.ticker:
