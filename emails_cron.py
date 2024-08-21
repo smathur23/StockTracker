@@ -61,7 +61,10 @@ def send_email(user):
     """
     stock_data_cache = {}
     for stock in stocks:
-        html += f"<h1>{stock.ticker}</h1>"
+        if ".NS" in stock.ticker:
+            html += f"<h1>{stock.ticker.replace('.NS', '')}: {processing.get_price(stock.ticker)} INR</h1>"
+        else:
+            html += f"<h1>{stock.ticker}: ${processing.get_price(stock.ticker)}</h1>"
         if stock.ticker not in stock_data_cache:
             stock_data_cache[stock.ticker] = {}
             stock_data_cache[stock.ticker]['macd'] = processing.last_macd_crossover(stock.ticker)

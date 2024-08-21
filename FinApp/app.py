@@ -174,7 +174,10 @@ def email_prices():
 
         """
         for stock in stocks:
-            html += f"<h1>{stock.ticker}</h1>"
+            if ".NS" in stock.ticker:
+                html += f"<h1>{stock.ticker.replace('.NS', '')}: {get_price(stock.ticker)} INR</h1>"
+            else:
+                html += f"<h1>{stock.ticker}: ${get_price(stock.ticker)}</h1>"
             if 'macd' in preferences:
                 html += f'<p><b>MACD:</b> {last_macd_crossover(stock.ticker)}</p>'
             if 'donchian' in preferences:
