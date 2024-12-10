@@ -35,79 +35,88 @@ def pct_change(symbol):
     This function will return the most recent MACD crossover signal for a given stock ticker.
 '''
 def last_macd_crossover(ticker):
-    end_date = datetime.today().strftime('%Y-%m-%d')
-    start_date = (datetime.today() - pd.DateOffset(years=1)).strftime('%Y-%m-%d')
-    stock_data = yf.download(ticker, start=start_date, end=end_date)
-    
-    macd = ta.macd(stock_data['Close'])
-    stock_data = pd.concat([stock_data, macd], axis=1).dropna()
-    
-    stock_data['MACD_Cross_Signal'] = stock_data['MACD_12_26_9'] - stock_data['MACDs_12_26_9']
-    stock_data['Signal'] = stock_data['MACD_Cross_Signal'].apply(lambda x: 'Bullish' if x > 0 else 'Bearish')
-    stock_data['Crossover'] = stock_data['Signal'].ne(stock_data['Signal'].shift())
+    try:
+        end_date = datetime.today().strftime('%Y-%m-%d')
+        start_date = (datetime.today() - pd.DateOffset(years=1)).strftime('%Y-%m-%d')
+        stock_data = yf.download(ticker, start=start_date, end=end_date)
+        
+        macd = ta.macd(stock_data['Close'])
+        stock_data = pd.concat([stock_data, macd], axis=1).dropna()
+        
+        stock_data['MACD_Cross_Signal'] = stock_data['MACD_12_26_9'] - stock_data['MACDs_12_26_9']
+        stock_data['Signal'] = stock_data['MACD_Cross_Signal'].apply(lambda x: 'Bullish' if x > 0 else 'Bearish')
+        stock_data['Crossover'] = stock_data['Signal'].ne(stock_data['Signal'].shift())
 
-    crossovers = stock_data[stock_data['Crossover']]
-    
-    if crossovers.empty:
-        return f"No MACD crossovers found for {ticker} in the past year."
-    else:
-        last_crossover = crossovers.iloc[-1]
-        last_crossover_date = last_crossover.name.strftime('%Y-%m-%d')
-        crossover_signal = last_crossover['Signal']
-        if (datetime.today() - last_crossover.name).days <= 3:
-            return f"{crossover_signal} MACD crossover for {ticker} on <em><u>{last_crossover_date}</u></em>."
-        return f"{crossover_signal} MACD crossover for {ticker} on {last_crossover_date}."
+        crossovers = stock_data[stock_data['Crossover']]
+        
+        if crossovers.empty:
+            return f"No MACD crossovers found for {ticker} in the past year."
+        else:
+            last_crossover = crossovers.iloc[-1]
+            last_crossover_date = last_crossover.name.strftime('%Y-%m-%d')
+            crossover_signal = last_crossover['Signal']
+            if (datetime.today() - last_crossover.name).days <= 3:
+                return f"{crossover_signal} MACD crossover for {ticker} on <em><u>{last_crossover_date}</u></em>."
+            return f"{crossover_signal} MACD crossover for {ticker} on {last_crossover_date}."
+    except Exception as e:
+        return f"Error fetching MACD data for {ticker}."
 
 
 '''
     This function will return the current position of a stock price relative to its Donchian Channel.
 '''
 def donchian_channel_position(ticker, lookback_period=20):
-    end_date = datetime.today().strftime('%Y-%m-%d')
-    start_date = (datetime.today() - pd.DateOffset(days=lookback_period*2)).strftime('%Y-%m-%d')
-    stock_data = yf.download(ticker, start=start_date, end=end_date)
-    
-    donchian = ta.donchian(stock_data['High'], stock_data['Low'])
-    stock_data = pd.concat([stock_data, donchian], axis=1).dropna()
+    try:
+        end_date = datetime.today().strftime('%Y-%m-%d')
+        start_date = (datetime.today() - pd.DateOffset(days=lookback_period*2)).strftime('%Y-%m-%d')
+        stock_data = yf.download(ticker, start=start_date, end=end_date)
+        
+        donchian = ta.donchian(stock_data['High'], stock_data['Low'])
+        stock_data = pd.concat([stock_data, donchian], axis=1).dropna()
 
-    latest_data = stock_data.iloc[-1]
-    current_price = latest_data['Close']
-    upper_band = latest_data['DCU_20_20']
-    lower_band = latest_data['DCL_20_20']
-    middle_band = (upper_band + lower_band) / 2
+        latest_data = stock_data.iloc[-1]
+        current_price = latest_data['Close']
+        upper_band = latest_data['DCU_20_20']
+        lower_band = latest_data['DCL_20_20']
+        middle_band = (upper_band + lower_band) / 2
 
-    if current_price > upper_band:
-        position = "above"
-    elif current_price < lower_band:
-        position = "below"
-    elif current_price >= middle_band:
-        position = "in the upper half of"
-    else:
-        position = "in the lower half of"
+        if current_price > upper_band:
+            position = "above"
+        elif current_price < lower_band:
+            position = "below"
+        elif current_price >= middle_band:
+            position = "in the upper half of"
+        else:
+            position = "in the lower half of"
 
-    return f"The current price of {ticker} is {position} the Donchian Channel."
+        return f"The current price of {ticker} is {position} the Donchian Channel."
+    except Exception as e:
+        return f"Error fetching Donchian Channel data for {ticker}."
 
 
 '''
     This method returns the most recent RSI of a stock and determines if it is overbought or oversold.
 '''
 def rsi(ticker):
-    end_date = datetime.today().strftime('%Y-%m-%d')
-    start_date = (datetime.today() - pd.DateOffset(days=200)).strftime('%Y-%m-%d')  
-    stock_data = yf.download(ticker, start=start_date, end=end_date)
-    
-    rsi = ta.rsi(stock_data['Close'])
-    stock_data = pd.concat([stock_data, rsi], axis=1).dropna()
-    
-    latest_data = stock_data.iloc[-1]
-    current_rsi = round(latest_data['RSI_14'], 2)
-    
-    if current_rsi > 70:
-        return f"{ticker} is overbought with an RSI of {current_rsi}."
-    elif current_rsi < 30:
-        return f"{ticker} is oversold with an RSI of {current_rsi}."
-    else:
-        return f"{ticker} has an RSI of {current_rsi}."
+    try:
+        end_date = datetime.today().strftime('%Y-%m-%d')
+        start_date = (datetime.today() - pd.DateOffset(days=200)).strftime('%Y-%m-%d')  
+        stock_data = yf.download(ticker, start=start_date, end=end_date)
+        
+        rsi = ta.rsi(stock_data['Close'])
+        stock_data = pd.concat([stock_data, rsi], axis=1).dropna()
+        
+        latest_data = stock_data.iloc[-1]
+        current_rsi = round(latest_data['RSI_14'], 2)
+        
+        if current_rsi > 70:
+            return f"{ticker} is overbought with an RSI of {current_rsi}."
+        elif current_rsi < 30:
+            return f"{ticker} is oversold with an RSI of {current_rsi}."
+        else:
+            return f"{ticker} has an RSI of {current_rsi}."
+    except Exception as e:
+        return f"Error fetching RSI data for {ticker}."
 
 
 '''
@@ -115,37 +124,40 @@ def rsi(ticker):
     with returning the most recent directional crossover.
 '''
 def adx(ticker):
-    end_date = datetime.today().strftime('%Y-%m-%d')
-    start_date = (datetime.today() - pd.DateOffset(days=300)).strftime('%Y-%m-%d')  
-    stock_data = yf.download(ticker, start=start_date, end=end_date)
+    try:
+        end_date = datetime.today().strftime('%Y-%m-%d')
+        start_date = (datetime.today() - pd.DateOffset(days=300)).strftime('%Y-%m-%d')  
+        stock_data = yf.download(ticker, start=start_date, end=end_date)
 
-    adx = ta.adx(stock_data['High'], stock_data['Low'], stock_data['Close'])
-    stock_data = pd.concat([stock_data, adx], axis=1).dropna()
+        adx = ta.adx(stock_data['High'], stock_data['Low'], stock_data['Close'])
+        stock_data = pd.concat([stock_data, adx], axis=1).dropna()
 
-    latest_data = stock_data.iloc[-1]
-    current_adx = round(latest_data['ADX_14'], 2)
+        latest_data = stock_data.iloc[-1]
+        current_adx = round(latest_data['ADX_14'], 2)
 
-    res = ""
+        res = ""
 
-    if current_adx < 25:
-        res += f"{ticker} is showing a weak trend with an ADX of {current_adx}."
-    elif current_adx < 50:
-        res += f"{ticker} is trending with an ADX of {current_adx}."
-    else:
-        res += f"{ticker} is showing a very strond trend with an ADX of {current_adx}."
+        if current_adx < 25:
+            res += f"{ticker} is showing a weak trend with an ADX of {current_adx}."
+        elif current_adx < 50:
+            res += f"{ticker} is trending with an ADX of {current_adx}."
+        else:
+            res += f"{ticker} is showing a very strond trend with an ADX of {current_adx}."
 
-    stock_data['ADX_Cross'] = stock_data['DMP_14'] - stock_data['DMN_14']
-    stock_data['Signal'] = stock_data['ADX_Cross'].apply(lambda x: 'Bullish' if x > 0 else 'Bearish')
-    stock_data['Crossover'] = stock_data['Signal'].ne(stock_data['Signal'].shift())
+        stock_data['ADX_Cross'] = stock_data['DMP_14'] - stock_data['DMN_14']
+        stock_data['Signal'] = stock_data['ADX_Cross'].apply(lambda x: 'Bullish' if x > 0 else 'Bearish')
+        stock_data['Crossover'] = stock_data['Signal'].ne(stock_data['Signal'].shift())
 
-    crossovers = stock_data[stock_data['Crossover']]
+        crossovers = stock_data[stock_data['Crossover']]
 
-    if not crossovers.empty:
-        last_crossover = crossovers.iloc[-1]
-        last_crossover_date = last_crossover.name.strftime('%Y-%m-%d')
-        crossover_signal = last_crossover['Signal']
-        if (datetime.today() - last_crossover.name).days <= 3:
-            return res + f" {crossover_signal} trend detected for {ticker} on <em><u>{last_crossover_date}</u></em>."
-        return res + f" {crossover_signal} trend detected for {ticker} on {last_crossover_date}."
+        if not crossovers.empty:
+            last_crossover = crossovers.iloc[-1]
+            last_crossover_date = last_crossover.name.strftime('%Y-%m-%d')
+            crossover_signal = last_crossover['Signal']
+            if (datetime.today() - last_crossover.name).days <= 3:
+                return res + f" {crossover_signal} trend detected for {ticker} on <em><u>{last_crossover_date}</u></em>."
+            return res + f" {crossover_signal} trend detected for {ticker} on {last_crossover_date}."
 
-    return res
+        return res
+    except Exception as e:
+        return f"Error fetching ADX data for {ticker}."
