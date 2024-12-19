@@ -169,11 +169,11 @@ def get_earnings(ticker):
     try:
         eardates = yf.Ticker(ticker).calendar['Earnings Date']
         if len(eardates) == 2:
-            if (datetime.today() - eardates[0]).days <= 3:
+            if (eardates[0] - datetime.date(datetime.today())).days <= 3:
                 return f"The next estimated earnings date range of {ticker} is between <em><u>{eardates[0]}</u></em> and <em><u>{eardates[1]}</u></em>."
             return f"The next estimated earnings date range of {ticker} is between {eardates[0]} and {eardates[1]}."
         elif len(eardates) == 1:
-            if (datetime.today() - eardates[0]).days <= 3:
+            if (eardates[0] - datetime.date(datetime.today())).days <= 3:
                 return f"The next estimated earnings date of {ticker} is <em><u>{eardates[0]}</u></em>."
             return f"The next estimated earnings date of {ticker} is {eardates[0]}."
         else:

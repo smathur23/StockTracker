@@ -73,6 +73,7 @@ def send_email(user):
             stock_data_cache[stock.ticker]['donchian'] = processing.donchian_channel_position(stock.ticker)
             stock_data_cache[stock.ticker]['rsi'] = processing.rsi(stock.ticker)
             stock_data_cache[stock.ticker]['adx'] = processing.adx(stock.ticker)
+            stock_data_cache[stock.ticker]['earnings'] = processing.get_earnings(stock.ticker)
 
         if 'macd' in preferences:
             html += f'<p><b>MACD:</b> {stock_data_cache[stock.ticker]["macd"]}</p>'
@@ -81,7 +82,8 @@ def send_email(user):
         if 'rsi' in preferences:
             html += f'<p><b>RSI:</b> {stock_data_cache[stock.ticker]["rsi"]}</p>'
         if 'adx' in preferences:
-            html += f'</p><b>ADX:</b> {stock_data_cache[stock.ticker]["adx"]}</p>'
+            html += f'<p><b>ADX:</b> {stock_data_cache[stock.ticker]["adx"]}</p>'
+        html += f'<p><b>Earnings:</b> {stock_data_cache[stock.ticker]["earnings"]}</p>'
     linkedin = "https://www.linkedin.com/in/saahil-mathur"
     html += f'<br><p>Check out my <a href={linkedin}>LinkedIn</a>!</p>'
     html += "<body>\n<html>"
