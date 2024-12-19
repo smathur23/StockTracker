@@ -188,6 +188,7 @@ def email_prices():
                 html += f'<p><b>RSI:</b> {rsi(stock.ticker)}</p>'
             if 'adx' in preferences:
                 html += f'</p><b>ADX:</b> {adx(stock.ticker)}</p>'
+            html += f'<p><b>Earnings:</b> {get_earnings(stock.ticker)}</p>'
         linkedin = "https://www.linkedin.com/in/saahil-mathur"
         html += f'<br><p>Check out my <a href={linkedin}>LinkedIn</a>!</p>'
         html += "<body>\n<html>"
