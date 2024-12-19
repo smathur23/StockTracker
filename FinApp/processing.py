@@ -161,3 +161,22 @@ def adx(ticker):
         return res
     except Exception as e:
         return f"Error fetching ADX data for {ticker}."
+
+'''
+This function fetches an estimated date for earnings or a range if one exists.
+'''
+def get_earnings(ticker):
+    try:
+        eardates = yf.Ticker(ticker).calendar['Earnings Date']
+        if len(eardates) == 2:
+            if (datetime.today() - eardates[0]).days <= 3:
+                return f"The next estimated earnings date range of {ticker} is between <em><u>{eardates[0]}</u></em> and <em><u>{eardates[1]}</u></em>."
+            return f"The next estimated earnings date range of {ticker} is between {eardates[0]} and {eardates[1]}."
+        elif len(eardates) == 1:
+            if (datetime.today() - eardates[0]).days <= 3:
+                return f"The next estimated earnings date of {ticker} is <em><u>{eardates[0]}</u></em>."
+            return f"The next estimated earnings date of {ticker} is {eardates[0]}."
+        else:
+            return f"Unable to find earnings date of {ticker}."
+    except Exception as e:
+        return f"Error fetching earnings date for {ticker}."
