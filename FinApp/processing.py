@@ -4,23 +4,39 @@ import pandas_ta as ta
 from datetime import datetime
 from yfinance import set_tz_cache_location
 
-'''
+def get_price(ticker: str) -> int:
+    """
     This function will return the most recent price for a given stock ticker.
-'''
-def get_price(symbol):
+
+    Args:
+        ticker (str): Ticker to get price for.
+
+    Returns:
+        int: Price of ticker.
+    """
+
+    set_tz_cache_location('/tmp/')
     try:
-        stock = yf.Ticker(symbol)
+        stock = yf.Ticker(ticker)
         return round(stock.history(period='1d')['Close'].iloc[-1], 2)
     except Exception as e:
         print(f"Error fetching stock data: {e}")
         return 0
 
-'''
+def pct_change(ticker: str) -> float:
+    """
     This function will return the most recent percent change for a stock price for a given stock ticker.
-'''
-def pct_change(symbol):
+
+    Args:
+        ticker (str): Ticker to calculate percent price change for.
+
+    Returns:
+        float: Rounded pct change for ticker.
+    """
+
+    set_tz_cache_location('/tmp/')
     try:
-        stock = yf.Ticker(symbol)
+        stock = yf.Ticker(ticker)
         history = stock.history(period='2d')
         if len(history) < 2:
             raise ValueError("Not enough data to calculate percent change")
@@ -30,14 +46,21 @@ def pct_change(symbol):
         return round(pct_change, 2)
     except Exception as e:
         print(f"Error fetching stock data: {e}")
-        return 0
+        return 0.0
 
-'''
+def last_macd_crossover(ticker: str) -> str:
+    """
     This function will return the most recent MACD crossover signal for a given stock ticker.
-'''
-def last_macd_crossover(ticker):
+
+    Args:
+        ticker (str): Ticker of stock to calculate last MACD crossover.
+
+    Returns:
+        str: Status of ticker's MACD crossover.
+    """
+
+    set_tz_cache_location('/tmp/')
     try:
-        set_tz_cache_location('/tmp/')
         end_date = datetime.today().strftime('%Y-%m-%d')
         start_date = (datetime.today() - pd.DateOffset(years=1)).strftime('%Y-%m-%d')
         stock_data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False)
@@ -63,20 +86,29 @@ def last_macd_crossover(ticker):
     except:
         return f"Error fetching MACD data for {ticker}."
 
-'''
+def donchian_channel_position(ticker: int, lookback_period: int = 20) -> str:
+    """
     This function will return the current position of a stock price relative to its Donchian Channel.
-'''
-def donchian_channel_position(ticker, lookback_period=20):
+
+    Args:
+        ticker (str): Ticker of stock to calculate Donchian Channel position.
+        lookback_period (int): How far back to look for mins and maxes, 20 days is standard, and default for this function.
+
+    Returns:
+        str: Status of ticker's Donchian position.
+    """
+
+    set_tz_cache_location('/tmp/')
     try:
         end_date = datetime.today().strftime('%Y-%m-%d')
         start_date = (datetime.today() - pd.DateOffset(days=lookback_period*2)).strftime('%Y-%m-%d')
-        stock_data = yf.download(ticker, start=start_date, end=end_date)
+        stock_data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False)
         
-        donchian = ta.donchian(stock_data['High'], stock_data['Low'])
+        donchian = ta.donchian(stock_data['High'][ticker], stock_data['Low'][ticker])
         stock_data = pd.concat([stock_data, donchian], axis=1).dropna()
 
         latest_data = stock_data.iloc[-1]
-        current_price = latest_data['Close']
+        current_price = latest_data[('Close', ticker)]
         upper_band = latest_data['DCU_20_20']
         lower_band = latest_data['DCL_20_20']
         middle_band = (upper_band + lower_band) / 2
@@ -92,19 +124,26 @@ def donchian_channel_position(ticker, lookback_period=20):
 
         return f"The current price of {ticker} is {position} the Donchian Channel."
     except Exception as e:
-        return e
+        return f"Error fetching Donchian Channel data for {ticker}."
 
-
-'''
+def rsi(ticker: str) -> str:
+    """
     This method returns the most recent RSI of a stock and determines if it is overbought or oversold.
-'''
-def rsi(ticker):
+
+    Args:
+        ticker (str): Ticker of stock to calculate RSI.
+
+    Returns:
+        str: Status of ticker's RSI.
+    """
+
+    set_tz_cache_location('/tmp/')
     try:
         end_date = datetime.today().strftime('%Y-%m-%d')
         start_date = (datetime.today() - pd.DateOffset(days=200)).strftime('%Y-%m-%d')  
-        stock_data = yf.download(ticker, start=start_date, end=end_date)
+        stock_data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False)
         
-        rsi = ta.rsi(stock_data['Close'])
+        rsi = ta.rsi(stock_data['Close'][ticker])
         stock_data = pd.concat([stock_data, rsi], axis=1).dropna()
         
         latest_data = stock_data.iloc[-1]
@@ -117,20 +156,27 @@ def rsi(ticker):
         else:
             return f"{ticker} has an RSI of {current_rsi}."
     except Exception as e:
-        return e
+        return f"Error fetching RSI data for {ticker}."
 
-
-'''
+def adx(ticker: str) -> str:
+    """
     This method returns the most recent ADX of a stock and determines if it is trending or not along
     with returning the most recent directional crossover.
-'''
-def adx(ticker):
+
+    Args:
+        ticker (str): Ticker of stock to evaluate ADX for.
+
+    Returns:
+        str: Status of ticker's ADX.
+    """
+
+    set_tz_cache_location('/tmp/')
     try:
         end_date = datetime.today().strftime('%Y-%m-%d')
         start_date = (datetime.today() - pd.DateOffset(days=300)).strftime('%Y-%m-%d')  
         stock_data = yf.download(ticker, start=start_date, end=end_date)
 
-        adx = ta.adx(stock_data['High'], stock_data['Low'], stock_data['Close'])
+        adx = ta.adx(stock_data['High'][ticker], stock_data['Low'][ticker], stock_data['Close'][ticker])
         stock_data = pd.concat([stock_data, adx], axis=1).dropna()
 
         latest_data = stock_data.iloc[-1]
@@ -161,12 +207,19 @@ def adx(ticker):
 
         return res
     except Exception as e:
-        return e
+        return f"Error fetching ADX data for {ticker}."
 
-'''
-This function fetches an estimated date for earnings or a range if one exists.
-'''
-def get_earnings(ticker):
+def get_earnings(ticker: str) -> str:
+    """
+    This function fetches an estimated date for earnings or a range if one exists.
+
+    Args:
+        ticker (str): Ticker of stock to get earnings dates for.
+
+    Returns:
+        str: Next earnings date/date range for given ticker.
+    """
+    set_tz_cache_location('/tmp/')
     try:
         eardates = yf.Ticker(ticker).calendar['Earnings Date']
         if len(eardates) == 2:
@@ -180,4 +233,4 @@ def get_earnings(ticker):
         else:
             return f"Unable to find earnings date of {ticker}."
     except Exception as e:
-        return e
+        return f"Error getting earnings date for {ticker}."
