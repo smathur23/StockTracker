@@ -37,31 +37,28 @@ def pct_change(symbol):
 '''
 def last_macd_crossover(ticker):
     set_tz_cache_location('/tmp/')
-    try:
-        end_date = datetime.today().strftime('%Y-%m-%d')
-        start_date = (datetime.today() - pd.DateOffset(years=1)).strftime('%Y-%m-%d')
-        stock_data = yf.download(ticker, start=start_date, end=end_date)
-        
-        macd = ta.macd(stock_data['Close'])
-        stock_data = pd.concat([stock_data, macd], axis=1).dropna()
-        
-        stock_data['MACD_Cross_Signal'] = stock_data['MACD_12_26_9'] - stock_data['MACDs_12_26_9']
-        stock_data['Signal'] = stock_data['MACD_Cross_Signal'].apply(lambda x: 'Bullish' if x > 0 else 'Bearish')
-        stock_data['Crossover'] = stock_data['Signal'].ne(stock_data['Signal'].shift())
+    end_date = datetime.today().strftime('%Y-%m-%d')
+    start_date = (datetime.today() - pd.DateOffset(years=1)).strftime('%Y-%m-%d')
+    stock_data = yf.download(ticker, start=start_date, end=end_date)
+    
+    macd = ta.macd(stock_data['Close'])
+    stock_data = pd.concat([stock_data, macd], axis=1).dropna()
+    
+    stock_data['MACD_Cross_Signal'] = stock_data['MACD_12_26_9'] - stock_data['MACDs_12_26_9']
+    stock_data['Signal'] = stock_data['MACD_Cross_Signal'].apply(lambda x: 'Bullish' if x > 0 else 'Bearish')
+    stock_data['Crossover'] = stock_data['Signal'].ne(stock_data['Signal'].shift())
 
-        crossovers = stock_data[stock_data['Crossover']]
-        
-        if crossovers.empty:
-            return f"No MACD crossovers found for {ticker} in the past year."
-        else:
-            last_crossover = crossovers.iloc[-1]
-            last_crossover_date = last_crossover.name.strftime('%Y-%m-%d')
-            crossover_signal = last_crossover['Signal']
-            if (datetime.today() - last_crossover.name).days <= 3:
-                return f"{crossover_signal} MACD crossover for {ticker} on <em><u>{last_crossover_date}</u></em>."
-            return f"{crossover_signal} MACD crossover for {ticker} on {last_crossover_date}."
-    except Exception as e:
-        return e
+    crossovers = stock_data[stock_data['Crossover']]
+    
+    if crossovers.empty:
+        return f"No MACD crossovers found for {ticker} in the past year."
+    else:
+        last_crossover = crossovers.iloc[-1]
+        last_crossover_date = last_crossover.name.strftime('%Y-%m-%d')
+        crossover_signal = last_crossover['Signal']
+        if (datetime.today() - last_crossover.name).days <= 3:
+            return f"{crossover_signal} MACD crossover for {ticker} on <em><u>{last_crossover_date}</u></em>."
+        return f"{crossover_signal} MACD crossover for {ticker} on {last_crossover_date}."
 
 
 '''
