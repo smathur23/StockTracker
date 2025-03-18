@@ -2,6 +2,7 @@ import yfinance as yf
 import pandas as pd
 import pandas_ta as ta
 from datetime import datetime
+from yfinance import set_tz_cache_location
 
 '''
     This function will return the most recent price for a given stock ticker.
