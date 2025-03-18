@@ -53,6 +53,8 @@ def register():
         email = request.form['email']
         password = request.form['password']
         confirm_password = request.form['confirm_password']
+        if len(password) < 8:
+            return render_template('register.html', alert_flag="Password length must be at least 8 characters.")
         if password != confirm_password:
             return render_template('register.html', alert_flag="Passwords do not match.")
 
