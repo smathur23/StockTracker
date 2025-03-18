@@ -37,12 +37,14 @@ def pct_change(symbol):
 '''
 def last_macd_crossover(ticker):
     set_tz_cache_location('/tmp/')
+    print(f'{ticker}\n\n')
     end_date = datetime.today().strftime('%Y-%m-%d')
     start_date = (datetime.today() - pd.DateOffset(years=1)).strftime('%Y-%m-%d')
     stock_data = yf.download(ticker, start=start_date, end=end_date)
     
     macd = ta.macd(stock_data['Close'])
     stock_data = pd.concat([stock_data, macd], axis=1).dropna()
+    print(stock_data)
     
     stock_data['MACD_Cross_Signal'] = stock_data['MACD_12_26_9'] - stock_data['MACDs_12_26_9']
     stock_data['Signal'] = stock_data['MACD_Cross_Signal'].apply(lambda x: 'Bullish' if x > 0 else 'Bearish')
