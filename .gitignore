@@ -1,4 +1,4 @@
 .env
-notifvenv/
+finvenv/
 instance/
 __pycache__/
