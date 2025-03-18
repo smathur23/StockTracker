@@ -59,7 +59,7 @@ def last_macd_crossover(ticker):
                 return f"{crossover_signal} MACD crossover for {ticker} on <em><u>{last_crossover_date}</u></em>."
             return f"{crossover_signal} MACD crossover for {ticker} on {last_crossover_date}."
     except Exception as e:
-        return f"Error fetching MACD data for {ticker}."
+        return f"Error fetching MACD data for {e}."
 
 
 '''
@@ -91,7 +91,7 @@ def donchian_channel_position(ticker, lookback_period=20):
 
         return f"The current price of {ticker} is {position} the Donchian Channel."
     except Exception as e:
-        return f"Error fetching Donchian Channel data for {ticker}."
+        return f"Error fetching Donchian Channel data for {e}."
 
 
 '''
@@ -116,7 +116,7 @@ def rsi(ticker):
         else:
             return f"{ticker} has an RSI of {current_rsi}."
     except Exception as e:
-        return f"Error fetching RSI data for {ticker}."
+        return f"Error fetching RSI data for {e}."
 
 
 '''
@@ -160,7 +160,7 @@ def adx(ticker):
 
         return res
     except Exception as e:
-        return f"Error fetching ADX data for {ticker}."
+        return f"Error fetching ADX data for {e}."
 
 '''
 This function fetches an estimated date for earnings or a range if one exists.
