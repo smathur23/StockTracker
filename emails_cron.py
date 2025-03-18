@@ -31,7 +31,7 @@ def should_send_email(user):
             return True
     elif user.email_frequency == 'monthly':
         last_sent = user.last_email_sent
-        if last_sent is None or last_sent < datetime.now() - timedelta(weeks=4):
+        if last_sent is None or last_sent < datetime.now() - timedelta(days=30):
             return True
     return False
 
