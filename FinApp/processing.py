@@ -36,34 +36,32 @@ def pct_change(symbol):
     This function will return the most recent MACD crossover signal for a given stock ticker.
 '''
 def last_macd_crossover(ticker):
-    set_tz_cache_location('/tmp/')
-    print(f'{ticker}\n\n')
-    end_date = datetime.today().strftime('%Y-%m-%d')
-    start_date = (datetime.today() - pd.DateOffset(years=1)).strftime('%Y-%m-%d')
-    stock_data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False)
-    print(stock_data)
+    try:
+        set_tz_cache_location('/tmp/')
+        end_date = datetime.today().strftime('%Y-%m-%d')
+        start_date = (datetime.today() - pd.DateOffset(years=1)).strftime('%Y-%m-%d')
+        stock_data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False)
+        
+        macd = ta.macd(stock_data['Close'][ticker])
+        stock_data = pd.concat([stock_data, macd], axis=1).dropna()
+        
+        stock_data['MACD_Cross_Signal'] = stock_data['MACD_12_26_9'] - stock_data['MACDs_12_26_9']
+        stock_data['Signal'] = stock_data['MACD_Cross_Signal'].apply(lambda x: 'Bullish' if x > 0 else 'Bearish')
+        stock_data['Crossover'] = stock_data['Signal'].ne(stock_data['Signal'].shift())
     
-    macd = ta.macd(stock_data['Close'][ticker])
-    print(macd)
-    stock_data = pd.concat([stock_data, macd], axis=1).dropna()
-    print(stock_data)
-    
-    stock_data['MACD_Cross_Signal'] = stock_data['MACD_12_26_9'] - stock_data['MACDs_12_26_9']
-    stock_data['Signal'] = stock_data['MACD_Cross_Signal'].apply(lambda x: 'Bullish' if x > 0 else 'Bearish')
-    stock_data['Crossover'] = stock_data['Signal'].ne(stock_data['Signal'].shift())
-
-    crossovers = stock_data[stock_data['Crossover']]
-    
-    if crossovers.empty:
-        return f"No MACD crossovers found for {ticker} in the past year."
-    else:
-        last_crossover = crossovers.iloc[-1]
-        last_crossover_date = last_crossover.name.strftime('%Y-%m-%d')
-        crossover_signal = last_crossover['Signal']
-        if (datetime.today() - last_crossover.name).days <= 3:
-            return f"{crossover_signal} MACD crossover for {ticker} on <em><u>{last_crossover_date}</u></em>."
-        return f"{crossover_signal} MACD crossover for {ticker} on {last_crossover_date}."
-
+        crossovers = stock_data[stock_data['Crossover']]
+        
+        if crossovers.empty:
+            return f"No MACD crossovers found for {ticker} in the past year."
+        else:
+            last_crossover = crossovers.iloc[-1]
+            last_crossover_date = last_crossover.name.strftime('%Y-%m-%d')
+            crossover_signal = last_crossover['Signal']
+            if (datetime.today() - last_crossover.name).days <= 3:
+                return f"{crossover_signal} MACD crossover for {ticker} on <em><u>{last_crossover_date}</u></em>."
+            return f"{crossover_signal} MACD crossover for {ticker} on {last_crossover_date}."
+    except:
+        return f"Error fetching MACD data for {ticker}."
 
 '''
     This function will return the current position of a stock price relative to its Donchian Channel.
