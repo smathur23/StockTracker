@@ -41,8 +41,10 @@ def last_macd_crossover(ticker):
     end_date = datetime.today().strftime('%Y-%m-%d')
     start_date = (datetime.today() - pd.DateOffset(years=1)).strftime('%Y-%m-%d')
     stock_data = yf.download(ticker, start=start_date, end=end_date)
+    print(stock_data)
     
     macd = ta.macd(stock_data['Close'])
+    print(macd)
     stock_data = pd.concat([stock_data, macd], axis=1).dropna()
     print(stock_data)
     
