@@ -35,6 +35,7 @@ def pct_change(symbol):
     This function will return the most recent MACD crossover signal for a given stock ticker.
 '''
 def last_macd_crossover(ticker):
+    set_tz_cache_location('/tmp/')
     try:
         end_date = datetime.today().strftime('%Y-%m-%d')
         start_date = (datetime.today() - pd.DateOffset(years=1)).strftime('%Y-%m-%d')
