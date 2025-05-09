@@ -3,6 +3,7 @@ import pandas as pd
 import pandas_ta as ta
 from datetime import datetime
 from yfinance import set_tz_cache_location
+from curl_cffi import requests
 
 def get_price(ticker: str) -> int:
     """
@@ -16,8 +17,9 @@ def get_price(ticker: str) -> int:
     """
 
     set_tz_cache_location('/tmp/')
+    session = requests.Session(impersonate="chrome")
     try:
-        stock = yf.Ticker(ticker)
+        stock = yf.Ticker(ticker, session=session)
         return round(stock.history(period='1d')['Close'].iloc[-1], 2)
     except Exception as e:
         print(f"Error fetching stock data: {e}")
@@ -35,8 +37,9 @@ def pct_change(ticker: str) -> float:
     """
 
     set_tz_cache_location('/tmp/')
+    session = requests.Session(impersonate="chrome")
     try:
-        stock = yf.Ticker(ticker)
+        stock = yf.Ticker(ticker, session=session)
         history = stock.history(period='2d')
         if len(history) < 2:
             raise ValueError("Not enough data to calculate percent change")
@@ -60,10 +63,11 @@ def last_macd_crossover(ticker: str) -> str:
     """
 
     set_tz_cache_location('/tmp/')
+    session = requests.Session(impersonate="chrome")
     try:
         end_date = datetime.today().strftime('%Y-%m-%d')
         start_date = (datetime.today() - pd.DateOffset(years=1)).strftime('%Y-%m-%d')
-        stock_data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False)
+        stock_data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False, session=session)
         
         macd = ta.macd(stock_data['Close'][ticker])
         stock_data = pd.concat([stock_data, macd], axis=1).dropna()
@@ -99,10 +103,11 @@ def donchian_channel_position(ticker: int, lookback_period: int = 20) -> str:
     """
 
     set_tz_cache_location('/tmp/')
+    session = requests.Session(impersonate="chrome")
     try:
         end_date = datetime.today().strftime('%Y-%m-%d')
         start_date = (datetime.today() - pd.DateOffset(days=lookback_period*2)).strftime('%Y-%m-%d')
-        stock_data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False)
+        stock_data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False, session=session)
         
         donchian = ta.donchian(stock_data['High'][ticker], stock_data['Low'][ticker])
         stock_data = pd.concat([stock_data, donchian], axis=1).dropna()
@@ -138,10 +143,11 @@ def rsi(ticker: str) -> str:
     """
 
     set_tz_cache_location('/tmp/')
+    session = requests.Session(impersonate="chrome") 
     try:
         end_date = datetime.today().strftime('%Y-%m-%d')
         start_date = (datetime.today() - pd.DateOffset(days=200)).strftime('%Y-%m-%d')  
-        stock_data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False)
+        stock_data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False, session=session)
         
         rsi = ta.rsi(stock_data['Close'][ticker])
         stock_data = pd.concat([stock_data, rsi], axis=1).dropna()
@@ -171,10 +177,11 @@ def adx(ticker: str) -> str:
     """
 
     set_tz_cache_location('/tmp/')
+    session = requests.Session(impersonate="chrome")
     try:
         end_date = datetime.today().strftime('%Y-%m-%d')
         start_date = (datetime.today() - pd.DateOffset(days=300)).strftime('%Y-%m-%d')  
-        stock_data = yf.download(ticker, start=start_date, end=end_date)
+        stock_data = yf.download(ticker, start=start_date, end=end_date, session=session)
 
         adx = ta.adx(stock_data['High'][ticker], stock_data['Low'][ticker], stock_data['Close'][ticker])
         stock_data = pd.concat([stock_data, adx], axis=1).dropna()
@@ -220,8 +227,9 @@ def get_earnings(ticker: str) -> str:
         str: Next earnings date/date range for given ticker.
     """
     set_tz_cache_location('/tmp/')
+    session = requests.Session(impersonate="chrome")
     try:
-        eardates = yf.Ticker(ticker).calendar['Earnings Date']
+        eardates = yf.Ticker(ticker, session=session).calendar['Earnings Date']
         if len(eardates) == 2:
             if (eardates[0] - datetime.date(datetime.today())).days <= 3:
                 return f"The next estimated earnings date range of {ticker} is between <em><u>{eardates[0]}</u></em> and <em><u>{eardates[1]}</u></em>."
