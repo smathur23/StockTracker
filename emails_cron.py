@@ -84,8 +84,8 @@ def send_email(user):
         if 'adx' in preferences:
             html += f'<p><b>ADX:</b> {stock_data_cache[stock.ticker]["adx"]}</p>'
         html += f'<p><b>Earnings:</b> {stock_data_cache[stock.ticker]["earnings"]}</p>'
-    linkedin = "https://www.linkedin.com/in/saahil-mathur"
-    html += f'<br><p>Check out my <a href={linkedin}>LinkedIn</a>!</p>'
+    # linkedin = "https://www.linkedin.com/in/saahil-mathur"
+    # html += f'<br><p>Check out my <a href={linkedin}>LinkedIn</a>!</p>'
     html += "<body>\n<html>"
     message.attach(MIMEText(html, "html"))
     try:
