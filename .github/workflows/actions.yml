@@ -30,5 +30,6 @@ jobs:
           DB_URL: ${{ secrets.DB_URL }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_API_KEY: ${{ secrets.SUPABASE_API_KEY }}
+          EMAILID: ${{ secrets.EMAILID }}
         run: |
-          python emails_cron.py
+          python email_cron_manual.py
