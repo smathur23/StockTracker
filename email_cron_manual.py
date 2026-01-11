@@ -1,9 +1,252 @@
+import yfinance as yf
+import pandas as pd
+import pandas_ta as ta
+from datetime import datetime
+from yfinance import set_tz_cache_location
+from curl_cffi import requests
+
+def get_price(ticker: str) -> int:
+    """
+    This function will return the most recent price for a given stock ticker.
+
+    Args:
+        ticker (str): Ticker to get price for.
+
+    Returns:
+        int: Price of ticker.
+    """
+
+    set_tz_cache_location('/tmp/')
+    session = requests.Session(impersonate="chrome")
+    try:
+        stock = yf.Ticker(ticker, session=session)
+        return round(stock.history(period='1d')['Close'].iloc[-1], 2)
+    except Exception as e:
+        print(f"Error fetching stock data: {e}")
+        return 0
+
+def pct_change(ticker: str) -> float:
+    """
+    This function will return the most recent percent change for a stock price for a given stock ticker.
+
+    Args:
+        ticker (str): Ticker to calculate percent price change for.
+
+    Returns:
+        float: Rounded pct change for ticker.
+    """
+
+    set_tz_cache_location('/tmp/')
+    session = requests.Session(impersonate="chrome")
+    try:
+        stock = yf.Ticker(ticker, session=session)
+        history = stock.history(period='2d')
+        if len(history) < 2:
+            raise ValueError("Not enough data to calculate percent change")
+        
+        close_prices = history['Close']
+        pct_change = ((close_prices.iloc[-1] - close_prices.iloc[-2]) / close_prices.iloc[-2]) * 100
+        return round(pct_change, 2)
+    except Exception as e:
+        print(f"Error fetching stock data: {e}")
+        return 0.0
+
+def last_macd_crossover(ticker: str) -> str:
+    """
+    This function will return the most recent MACD crossover signal for a given stock ticker.
+
+    Args:
+        ticker (str): Ticker of stock to calculate last MACD crossover.
+
+    Returns:
+        str: Status of ticker's MACD crossover.
+    """
+
+    set_tz_cache_location('/tmp/')
+    session = requests.Session(impersonate="chrome")
+    try:
+        end_date = datetime.today().strftime('%Y-%m-%d')
+        start_date = (datetime.today() - pd.DateOffset(years=1)).strftime('%Y-%m-%d')
+        stock_data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False, session=session)
+        
+        macd = ta.macd(stock_data['Close'][ticker])
+        stock_data = pd.concat([stock_data, macd], axis=1).dropna()
+        
+        stock_data['MACD_Cross_Signal'] = stock_data['MACD_12_26_9'] - stock_data['MACDs_12_26_9']
+        stock_data['Signal'] = stock_data['MACD_Cross_Signal'].apply(lambda x: 'Bullish' if x > 0 else 'Bearish')
+        stock_data['Crossover'] = stock_data['Signal'].ne(stock_data['Signal'].shift())
+    
+        crossovers = stock_data[stock_data['Crossover']]
+        
+        if crossovers.empty:
+            return f"No MACD crossovers found for {ticker} in the past year."
+        else:
+            last_crossover = crossovers.iloc[-1]
+            last_crossover_date = last_crossover.name.strftime('%Y-%m-%d')
+            crossover_signal = last_crossover['Signal']
+            if (datetime.today() - last_crossover.name).days <= 3:
+                return f"{crossover_signal} MACD crossover for {ticker} on <em><u>{last_crossover_date}</u></em>."
+            return f"{crossover_signal} MACD crossover for {ticker} on {last_crossover_date}."
+    except:
+        return f"Error fetching MACD data for {ticker}."
+
+def donchian_channel_position(ticker: int, lookback_period: int = 20) -> str:
+    """
+    This function will return the current position of a stock price relative to its Donchian Channel.
+
+    Args:
+        ticker (str): Ticker of stock to calculate Donchian Channel position.
+        lookback_period (int): How far back to look for mins and maxes, 20 days is standard, and default for this function.
+
+    Returns:
+        str: Status of ticker's Donchian position.
+    """
+
+    set_tz_cache_location('/tmp/')
+    session = requests.Session(impersonate="chrome")
+    try:
+        end_date = datetime.today().strftime('%Y-%m-%d')
+        start_date = (datetime.today() - pd.DateOffset(days=lookback_period*2)).strftime('%Y-%m-%d')
+        stock_data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False, session=session)
+        
+        donchian = ta.donchian(stock_data['High'][ticker], stock_data['Low'][ticker])
+        stock_data = pd.concat([stock_data, donchian], axis=1).dropna()
+
+        latest_data = stock_data.iloc[-1]
+        current_price = latest_data[('Close', ticker)]
+        upper_band = latest_data['DCU_20_20']
+        lower_band = latest_data['DCL_20_20']
+        middle_band = (upper_band + lower_band) / 2
+
+        if current_price > upper_band:
+            position = "above"
+        elif current_price < lower_band:
+            position = "below"
+        elif current_price >= middle_band:
+            position = "in the upper half of"
+        else:
+            position = "in the lower half of"
+
+        return f"The current price of {ticker} is {position} the Donchian Channel."
+    except Exception as e:
+        return f"Error fetching Donchian Channel data for {ticker}."
+
+def rsi(ticker: str) -> str:
+    """
+    This method returns the most recent RSI of a stock and determines if it is overbought or oversold.
+
+    Args:
+        ticker (str): Ticker of stock to calculate RSI.
+
+    Returns:
+        str: Status of ticker's RSI.
+    """
+
+    set_tz_cache_location('/tmp/')
+    session = requests.Session(impersonate="chrome") 
+    try:
+        end_date = datetime.today().strftime('%Y-%m-%d')
+        start_date = (datetime.today() - pd.DateOffset(days=200)).strftime('%Y-%m-%d')  
+        stock_data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False, session=session)
+        
+        rsi = ta.rsi(stock_data['Close'][ticker])
+        stock_data = pd.concat([stock_data, rsi], axis=1).dropna()
+        
+        latest_data = stock_data.iloc[-1]
+        current_rsi = round(latest_data['RSI_14'], 2)
+        
+        if current_rsi > 70:
+            return f"{ticker} is overbought with an RSI of {current_rsi}."
+        elif current_rsi < 30:
+            return f"{ticker} is oversold with an RSI of {current_rsi}."
+        else:
+            return f"{ticker} has an RSI of {current_rsi}."
+    except Exception as e:
+        return f"Error fetching RSI data for {ticker}."
+
+def adx(ticker: str) -> str:
+    """
+    This method returns the most recent ADX of a stock and determines if it is trending or not along
+    with returning the most recent directional crossover.
+
+    Args:
+        ticker (str): Ticker of stock to evaluate ADX for.
+
+    Returns:
+        str: Status of ticker's ADX.
+    """
+
+    set_tz_cache_location('/tmp/')
+    session = requests.Session(impersonate="chrome")
+    try:
+        end_date = datetime.today().strftime('%Y-%m-%d')
+        start_date = (datetime.today() - pd.DateOffset(days=300)).strftime('%Y-%m-%d')  
+        stock_data = yf.download(ticker, start=start_date, end=end_date, session=session)
+
+        adx = ta.adx(stock_data['High'][ticker], stock_data['Low'][ticker], stock_data['Close'][ticker])
+        stock_data = pd.concat([stock_data, adx], axis=1).dropna()
+
+        latest_data = stock_data.iloc[-1]
+        current_adx = round(latest_data['ADX_14'], 2)
+
+        res = ""
+
+        if current_adx < 25:
+            res += f"{ticker} is showing a weak trend with an ADX of {current_adx}."
+        elif current_adx < 50:
+            res += f"{ticker} is trending with an ADX of {current_adx}."
+        else:
+            res += f"{ticker} is showing a very strond trend with an ADX of {current_adx}."
+
+        stock_data['ADX_Cross'] = stock_data['DMP_14'] - stock_data['DMN_14']
+        stock_data['Signal'] = stock_data['ADX_Cross'].apply(lambda x: 'Bullish' if x > 0 else 'Bearish')
+        stock_data['Crossover'] = stock_data['Signal'].ne(stock_data['Signal'].shift())
+
+        crossovers = stock_data[stock_data['Crossover']]
+
+        if not crossovers.empty:
+            last_crossover = crossovers.iloc[-1]
+            last_crossover_date = last_crossover.name.strftime('%Y-%m-%d')
+            crossover_signal = last_crossover['Signal']
+            if (datetime.today() - last_crossover.name).days <= 3:
+                return res + f" {crossover_signal} trend detected for {ticker} on <em><u>{last_crossover_date}</u></em>."
+            return res + f" {crossover_signal} trend detected for {ticker} on {last_crossover_date}."
+
+        return res
+    except Exception as e:
+        return f"Error fetching ADX data for {ticker}."
+
+def get_earnings(ticker: str) -> str:
+    """
+    This function fetches an estimated date for earnings or a range if one exists.
+
+    Args:
+        ticker (str): Ticker of stock to get earnings dates for.
+
+    Returns:
+        str: Next earnings date/date range for given ticker.
+    """
+    set_tz_cache_location('/tmp/')
+    session = requests.Session(impersonate="chrome")
+    try:
+        eardates = yf.Ticker(ticker, session=session).calendar['Earnings Date']
+        if len(eardates) == 2:
+            if (eardates[0] - datetime.date(datetime.today())).days <= 3:
+                return f"The next estimated earnings date range of {ticker} is between <em><u>{eardates[0]}</u></em> and <em><u>{eardates[1]}</u></em>."
+            return f"The next estimated earnings date range of {ticker} is between {eardates[0]} and {eardates[1]}."
+        elif len(eardates) == 1:
+            if (eardates[0] - datetime.date(datetime.today())).days <= 3:
+                return f"The next estimated earnings date of {ticker} is <em><u>{eardates[0]}</u></em>."
+            return f"The next estimated earnings date of {ticker} is {eardates[0]}."
+        else:
+            return f"Unable to find earnings date of {ticker}."
+    except Exception as e:
+        return f"Error getting earnings date for {ticker}."
 import smtplib, ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
 from dotenv import load_dotenv
-from FinApp import processing
 
 load_dotenv()
 
@@ -33,16 +276,16 @@ def send_email():
     stock_data_cache = {}
     for stock in stocks:
         if ".NS" in stock:
-            html += f"<h1>{stock.replace('.NS', '')}: {processing.get_price(stock)} INR</h1>"
+            html += f"<h1>{stock.replace('.NS', '')}: {get_price(stock)} INR</h1>"
         else:
-            html += f"<h1>{stock}: ${processing.get_price(stock)}</h1>"
+            html += f"<h1>{stock}: ${get_price(stock)}</h1>"
         if stock not in stock_data_cache:
             stock_data_cache[stock] = {}
-            stock_data_cache[stock]['macd'] = processing.last_macd_crossover(stock)
-            stock_data_cache[stock]['donchian'] = processing.donchian_channel_position(stock)
-            stock_data_cache[stock]['rsi'] = processing.rsi(stock)
-            stock_data_cache[stock]['adx'] = processing.adx(stock)
-            stock_data_cache[stock]['earnings'] = processing.get_earnings(stock)
+            stock_data_cache[stock]['macd'] = last_macd_crossover(stock)
+            stock_data_cache[stock]['donchian'] = donchian_channel_position(stock)
+            stock_data_cache[stock]['rsi'] = rsi(stock)
+            stock_data_cache[stock]['adx'] = adx(stock)
+            stock_data_cache[stock]['earnings'] = get_earnings(stock)
         if 'macd' in preferences:
             html += f'<p><b>MACD:</b> {stock_data_cache[stock]["macd"]}</p>'
         if 'donchian' in preferences:
