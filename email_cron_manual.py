@@ -254,9 +254,9 @@ port = 465
 smtp_server = "smtp.gmail.com"
 sender = "adxupdates@gmail.com"
 password = os.getenv("APPPW")
-user_email = os.getenv("EMAILID")
+emails = [os.getenv("EMAILID1"), os.getenv("EMAILID2")]
 
-def send_email():
+def send_email(user_email):
     stocks = ["GOOG", "SPY", "MSFT", "AAPL", "ARM", "VOO", "NVDA", "AVGO", "MU", "META", "JPM", "AMD", "TSLA", "AMZN", "BRK.B", "ORCL", "MA", "V", "COST","PLTR", "BAC", "GS", "AXP"]
     email = user_email
     preferences = "macd,donchian,rsi,adx".split(',')
@@ -306,4 +306,5 @@ def send_email():
         print(e)
 
 
-send_email()
+for email in emails:
+    send_email(email)
