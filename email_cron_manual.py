@@ -257,7 +257,7 @@ password = os.getenv("APPPW")
 user_email = os.getenv("EMAILID")
 
 def send_email():
-    stocks = ["SPY", "MSFT", "AAPL", "ARM", "VOO", "NVDA", "AVGO", "MU", "META", "JPM", "AMD"]
+    stocks = ["GOOG", "SPY", "MSFT", "AAPL", "ARM", "VOO", "NVDA", "AVGO", "MU", "META", "JPM", "AMD", "TSLA", "AMZN", "BRK.B", "ORCL", "MA", "V", "COST","PLTR", "BAC", "GS", "AXP"]
     email = user_email
     preferences = "macd,donchian,rsi,adx".split(',')
     message = MIMEMultipart("alternative")
