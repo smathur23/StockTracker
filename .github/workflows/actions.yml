@@ -32,5 +32,6 @@ jobs:
           SUPABASE_API_KEY: ${{ secrets.SUPABASE_API_KEY }}
           EMAILID: ${{ secrets.EMAILID }}
           EMAILID2: ${{ secrets.EMAILID2 }}
+          EMAILID3: ${{ secrets.EMAILID3 }}
         run: |
           python email_cron_manual.py
